@@ -3,7 +3,7 @@ import { geoArea, geoAzimuthalEqualArea, geoCentroid, geoPath } from 'd3-geo';
 import type { FeatureCollection } from 'geojson';
 import { BY_ISO, COUNTRIES } from '../data/countries';
 import { loadCountries, type CountryFeature } from '../geo';
-import { connect } from '../sync';
+import { join, type LinkStatus } from '../sync';
 import { TABS, type Msg, type Region, type TabId } from '../types';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -13,11 +13,13 @@ const REGIONS: Region[] = ['Östasien', 'Sydostasien', 'Sydasien', 'Västasien',
 const view = { iso: null as string | null, tab: 'oversikt' as TabId, busy: false, lastSeen: 0 };
 let lockUntil = 0;
 
-let syncMode: 'online' | 'local' | 'offline' = 'local';
-const sync = connect('remote', onMsg, (s) => {
-  syncMode = s;
-  if (s !== 'offline') sync.send({ t: 'hello' });
-  render();
+let syncMode: LinkStatus = 'connecting';
+const sync = join({
+  onMsg,
+  onStatus: (s) => {
+    syncMode = s;
+    render();
+  },
 });
 
 function onMsg(m: Msg) {
@@ -121,8 +123,8 @@ function render() {
   const c = view.iso ? BY_ISO.get(view.iso) : null;
   $('control').hidden = !c;
   document.body.classList.toggle('open', !!c);
-  const alive = Date.now() - view.lastSeen < 10000;
-  document.body.classList.toggle('busy', view.busy && alive);
+  const fresh = Date.now() - view.lastSeen < 10000;
+  document.body.classList.toggle('busy', view.busy && fresh);
   $('prompt').textContent = c ? 'Byt flik eller välj ett annat land' : 'Tryck på ett land för att utforska det';
   if (c) {
     ($('cur-flag') as HTMLImageElement).src = `/flags/${c.iso.toLowerCase()}.svg`;
@@ -132,10 +134,15 @@ function render() {
   document.querySelectorAll<HTMLElement>('[data-iso]').forEach((el) => el.classList.toggle('selected', el.dataset.iso === view.iso));
 
   const conn = $('conn');
-  conn.dataset.state = alive ? 'ok' : syncMode === 'online' ? 'wait' : 'bad';
-  conn.querySelector('em')!.textContent = alive
-    ? 'Ansluten'
-    : { online: 'Söker skärmen… (öppna samma adress på TV:n)', local: 'Ingen synk – databasen är inte kopplad', offline: 'Nätverksfel – kontrollera wifi' }[syncMode];
+  const alive = syncMode === 'online';
+  document.body.classList.toggle('unpaired', syncMode === 'unpaired');
+  conn.dataset.state = alive ? 'ok' : syncMode === 'connecting' ? 'wait' : 'bad';
+  conn.querySelector('em')!.textContent = {
+    online: 'Ansluten',
+    connecting: 'Ansluter till skärmen…',
+    offline: 'Nätverksfel – kontrollera wifi',
+    unpaired: 'Inte parkopplad',
+  }[syncMode];
 }
 
 document.addEventListener('gesturestart', (e) => e.preventDefault());

@@ -64,4 +64,6 @@ export type Msg =
   | { t: 'tab'; tab: TabId }
   | { t: 'close' }
   | { t: 'hello' }
+  | { t: 'ping' }
+  | { t: 'pong' }
   | { t: 'state'; iso: string | null; tab: TabId; busy: boolean };

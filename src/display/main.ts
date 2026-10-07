@@ -3,7 +3,8 @@ import { BY_ISO } from '../data/countries';
 import { loadCountries } from '../geo';
 import { loadFx } from '../fx';
 import { loadPhotos } from '../photos';
-import { connect, type SyncStatus } from '../sync';
+import QRCode from 'qrcode';
+import { host, type LinkStatus } from '../sync';
 import type { Msg, TabId } from '../types';
 import { GlobeView, wait, type Pt } from './globe';
 import { Panel } from './panel';
@@ -19,7 +20,7 @@ const stage = $('stage');
 const panelEl = $('panel');
 const statusEl = $('status');
 
-let sync: ReturnType<typeof connect> | null = null;
+let sync: ReturnType<typeof host> | null = null;
 
 function broadcast() {
   sync?.send({ t: 'state', iso: state.iso, tab: state.tab, busy: state.busy });
@@ -142,11 +143,25 @@ const panel = new Panel(panelEl, (tab) => setTab(tab));
 
 void loadPhotos();
 void loadFx();
-sync = connect('display', onMsg, (s: SyncStatus) => {
-  statusEl.dataset.state = s;
-  $('status-text').textContent = { online: '', local: 'Ingen synk – databasen är inte kopplad', offline: 'Nätverksfel – synk saknas' }[s];
-  statusEl.title = { online: 'Ansluten', local: 'Lokalt läge (ingen synk mellan enheter)', offline: 'Frånkopplad' }[s];
-  if (s === 'online') broadcast();
+sync = host({
+  onMsg,
+  onPairUrl: async (url) => {
+    $('qr-code').innerHTML = await QRCode.toString(url, {
+      type: 'svg',
+      margin: 1,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#0a1222', light: '#ffffff' },
+    });
+    document.body.classList.add('qr-ready');
+  },
+  onControllers: (n) => {
+    document.body.classList.toggle('paired', n > 0);
+    if (n > 0) broadcast();
+  },
+  onStatus: (s: LinkStatus) => {
+    statusEl.dataset.state = s;
+    $('status-text').textContent = s === 'offline' ? 'Ingen internetanslutning – QR-koden fungerar inte än' : '';
+  },
 });
 setInterval(broadcast, 4000);
 broadcast();

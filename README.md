@@ -13,7 +13,7 @@ Interactive globe for client events. All of Asia is highlighted, plus Sweden. So
 - **three.js with a custom shader globe**: day/night textures, city lights, clouds, ocean reflection and atmosphere. Asia is highlighted via a mask texture (gold borders); no 3D country geometry is involved. Particles (5,000 with motion trails) are animated entirely on the GPU in the same WebGL canvas, and so are the twinkling stars.
 - **Performance**: one WebGL canvas for globe, stars and particles; pixel ratio max 1.5 and lowered automatically if frames stay slow; rendering stops while the panel covers the globe; country selection uses a small raster (no polygon geometry, no heavy point-in-polygon sampling); no `backdrop-filter`.
 - **Natural Earth 1:50m** for country borders (`public/data/world.topo.json`, built with `npm run geo`)
-- **Sync via Nile Postgres (or Upstash Redis).** The iPad posts commands to `/api/sync` (a Vercel function), and the display polls about 4×/s. Database credentials stay server-side; the app creates two small tables (`hk_cmds`, `hk_state`) and only stores the latest commands and display state (commands older than 10 min are deleted). Without a database it falls back to `BroadcastChannel` (two tabs in the same browser, for testing).
+- **QR pairing, peer-to-peer.** The TV shows a QR code; scanning it opens `/remote#<id>` and the iPad connects directly to the TV over WebRTC (PeerJS; the free public PeerJS server only introduces the two devices, and its TURN relays are used if the venue Wi-Fi blocks device-to-device traffic). No database or backend. The QR hides while a controller is connected and comes back when it closes the page or drops (heartbeat, ~3–7 s). The TV keeps its id in `localStorage`, so a reloaded TV keeps the same QR and the iPad reconnects by itself.
 - **Vercel** for hosting (`vercel.json`, clean URL `/remote`)
 
 ## Get started
@@ -21,24 +21,18 @@ Interactive globe for client events. All of Asia is highlighted, plus Sweden. So
 ```bash
 npm install
 npm run dev                  # http://localhost:5173  and  http://localhost:5173/remote
-npx vercel dev               # with /api + Redis locally (needs env vars, see .env.example)
 npm run build
 ```
 
-With `npm run dev` (no `/api`), open `/` and `/remote` in two tabs of the **same** browser to test.
-
-**Database on Vercel:** Vercel → Project → Storage → **Nile** → Connect to the project (sets `NILEDB_POSTGRES_URL`, `NILEDB_USER`, `NILEDB_PASSWORD`), then **Redeploy**. Any Postgres via `POSTGRES_URL`/`DATABASE_URL`, or Upstash Redis (`KV_REST_API_URL`/`KV_REST_API_TOKEN`), works too. The app detects it automatically.
-
-Check: open `https://<your-url>/api/sync?room=main&role=remote`. `{"enabled":true,"store":"postgres",...}` = OK, `{"enabled":false}` = no database connected to this deployment.
+Open `/` and scan the QR code (or open the link it encodes) on another device on the internet. Two tabs in the same browser also work via `BroadcastChannel`.
 
 Keyboard on the display: `f` = fullscreen, `Esc` = close the panel. You can also click countries with the mouse.
 
 ## Event day
 
 1. Laptop: open the URL in Chrome, press `f` for fullscreen and turn off sleep/screensaver.
-2. iPad: open `/remote` → Share → "Add to Home Screen" so it runs without the browser chrome.
-   Turn on **Guided Access** (Settings → Accessibility) so clients can't leave the app.
-3. Check that the dot at the top right of the iPad says "Ansluten" (connected). On the display, the small dot at the top right is green when sync is active, orange in local mode.
+2. iPad: scan the QR code in the corner of the TV with the camera and open the link. Optionally Share → "Add to Home Screen" from there (keeps the link) and turn on **Guided Access** (Settings → Accessibility) so clients can't leave the app.
+3. The QR code disappears when the iPad is connected and the iPad shows "Ansluten". If the iPad closes the page or loses Wi-Fi, the QR code comes back; scanning again (or reopening the page) reconnects.
 4. Optional, for offline robustness: run `npm run photos` before the build so the photos are bundled locally (see below).
 
 ## Content / data
@@ -54,8 +48,8 @@ Logo: put the firm's logo at `public/logo.svg` and it shows at the bottom right.
 ## Security / data protection
 
 - The app shows public macro data only. It stores no personal or client data and uses no cookies or tracking.
-- Database credentials are only in Vercel's server environment, never in the browser. `/api/sync` validates every message (country code, tab, state).
-- The URL has no login (by choice: fixed URL, no pairing). Anyone who knows the URL could control the screen, so set a random `VITE_ROOM` for the event and don't share the `/remote` link.
+- Control requires the session id from the QR code (random, 48 bits); only someone who can see the TV can scan it, and the QR is hidden while a controller is connected. The id stays the same across TV reloads; clear the site's storage on the TV laptop to get a new one.
+- Messages go directly between the devices over an encrypted WebRTC data channel; the PeerJS server only sees the session ids and IP addresses used to connect them.
 
 ## Credits
 
