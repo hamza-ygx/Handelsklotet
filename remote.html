@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Handelsklotet" />
+    <meta name="theme-color" content="#050c1a" />
+    <title>Handelsklotet – Kontroll</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <div class="eyebrow">Handelsklotet</div>
+        <div id="prompt" class="prompt">Tryck på ett land för att utforska det</div>
+      </div>
+      <div id="conn" class="conn" data-state="wait"><span></span><em>Ansluter…</em></div>
+    </header>
+
+    <section id="control" class="control" hidden>
+      <div class="current">
+        <img id="cur-flag" alt="" />
+        <div id="cur-name"></div>
+      </div>
+      <nav id="tabs" class="tabs"></nav>
+      <button id="close" class="close" type="button">✕ Stäng</button>
+    </section>
+
+    <main class="layout">
+      <div id="map" class="map"></div>
+      <aside id="list" class="list"></aside>
+    </main>
+
+    <script type="module" src="/src/remote/main.ts"></script>
+  </body>
+</html>

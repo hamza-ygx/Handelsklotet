@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Handelsklotet</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="stars"></div>
+    <div id="stage"></div>
+    <div id="veil"></div>
+    <canvas id="particles"></canvas>
+
+    <header class="brand">
+      <div class="eyebrow">Ekonomi · Handel · Marknader</div>
+      <h1>Handelsklotet</h1>
+      <p>Asien i fokus</p>
+    </header>
+
+    <div class="hint"><span class="pulse"></span>Välj ett land på iPaden</div>
+
+    <div class="firm">
+      <img src="/logo.svg" alt="" onerror="this.remove()" />
+      <span>Revisionskonsulterna J Hägglund</span>
+    </div>
+
+    <div id="status" data-state="local"></div>
+    <div id="panel" class="panel"></div>
+
+    <script type="module" src="/src/display/main.ts"></script>
+  </body>
+</html>
