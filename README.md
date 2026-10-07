@@ -13,7 +13,7 @@ Interactive globe for client events. All of Asia is highlighted, plus Sweden. So
 - **three.js with a custom shader globe**: day/night textures, city lights, clouds, ocean reflection and atmosphere. Asia is highlighted via a mask texture (gold borders); no 3D country geometry is involved. Particles (5,000 with motion trails) are animated entirely on the GPU in the same WebGL canvas, and so are the twinkling stars.
 - **Performance**: one WebGL canvas for globe, stars and particles; pixel ratio max 1.5 and lowered automatically if frames stay slow; rendering stops while the panel covers the globe; country selection uses a small raster (no polygon geometry, no heavy point-in-polygon sampling); no `backdrop-filter`.
 - **Natural Earth 1:50m** for country borders (`public/data/world.topo.json`, built with `npm run geo`)
-- **Sync via Upstash Redis.** The iPad posts commands to `/api/sync` (a Vercel function), and the display polls about 4×/s. The Redis token stays server-side; the app only stores the latest commands and display state (6 h TTL). Without Redis it falls back to `BroadcastChannel` (two tabs in the same browser, for testing).
+- **Sync via Nile Postgres (or Upstash Redis).** The iPad posts commands to `/api/sync` (a Vercel function), and the display polls about 4×/s. Database credentials stay server-side; the app creates two small tables (`hk_cmds`, `hk_state`) and only stores the latest commands and display state (commands older than 10 min are deleted). Without a database it falls back to `BroadcastChannel` (two tabs in the same browser, for testing).
 - **Vercel** for hosting (`vercel.json`, clean URL `/remote`)
 
 ## Get started
@@ -27,7 +27,9 @@ npm run build
 
 With `npm run dev` (no `/api`), open `/` and `/remote` in two tabs of the **same** browser to test.
 
-**Redis on Vercel:** Vercel → Project → Storage/Marketplace → Upstash Redis → Connect (sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`), or set `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` manually. Redeploy. The app detects Redis automatically.
+**Database on Vercel:** Vercel → Project → Storage → **Nile** → Connect to the project (sets `NILEDB_POSTGRES_URL`, `NILEDB_USER`, `NILEDB_PASSWORD`), then **Redeploy**. Any Postgres via `POSTGRES_URL`/`DATABASE_URL`, or Upstash Redis (`KV_REST_API_URL`/`KV_REST_API_TOKEN`), works too. The app detects it automatically.
+
+Check: open `https://<your-url>/api/sync?room=main&role=remote`. `{"enabled":true,"store":"postgres",...}` = OK, `{"enabled":false}` = no database connected to this deployment.
 
 Keyboard on the display: `f` = fullscreen, `Esc` = close the panel. You can also click countries with the mouse.
 
@@ -36,7 +38,7 @@ Keyboard on the display: `f` = fullscreen, `Esc` = close the panel. You can also
 1. Laptop: open the URL in Chrome, press `f` for fullscreen and turn off sleep/screensaver.
 2. iPad: open `/remote` → Share → "Add to Home Screen" so it runs without the browser chrome.
    Turn on **Guided Access** (Settings → Accessibility) so clients can't leave the app.
-3. Check that the dot at the top right of the iPad says "Ansluten" (connected). On the display, the small dot at the top right is green when Redis sync is active, orange in local mode.
+3. Check that the dot at the top right of the iPad says "Ansluten" (connected). On the display, the small dot at the top right is green when sync is active, orange in local mode.
 4. Optional, for offline robustness: run `npm run photos` before the build so the photos are bundled locally (see below).
 
 ## Content / data
@@ -52,7 +54,7 @@ Logo: put the firm's logo at `public/logo.svg` and it shows at the bottom right.
 ## Security / data protection
 
 - The app shows public macro data only. It stores no personal or client data and uses no cookies or tracking.
-- The Redis token is only in Vercel's server environment, never in the browser. `/api/sync` validates every message (country code, tab, state).
+- Database credentials are only in Vercel's server environment, never in the browser. `/api/sync` validates every message (country code, tab, state).
 - The URL has no login (by choice: fixed URL, no pairing). Anyone who knows the URL could control the screen, so set a random `VITE_ROOM` for the event and don't share the `/remote` link.
 
 ## Credits

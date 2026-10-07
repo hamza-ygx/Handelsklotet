@@ -135,7 +135,7 @@ function render() {
   conn.dataset.state = alive ? 'ok' : syncMode === 'online' ? 'wait' : 'bad';
   conn.querySelector('em')!.textContent = alive
     ? 'Ansluten'
-    : { online: 'Söker skärmen… (öppna samma adress på TV:n)', local: 'Ingen synk – Redis är inte kopplad', offline: 'Nätverksfel – kontrollera wifi' }[syncMode];
+    : { online: 'Söker skärmen… (öppna samma adress på TV:n)', local: 'Ingen synk – databasen är inte kopplad', offline: 'Nätverksfel – kontrollera wifi' }[syncMode];
 }
 
 document.addEventListener('gesturestart', (e) => e.preventDefault());
