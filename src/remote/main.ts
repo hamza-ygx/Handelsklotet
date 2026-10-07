@@ -13,7 +13,7 @@ const REGIONS: Region[] = ['Östasien', 'Sydostasien', 'Sydasien', 'Västasien',
 const view = { iso: null as string | null, tab: 'oversikt' as TabId, busy: false, lastSeen: 0 };
 let lockUntil = 0;
 
-const sync = connect(onMsg, (s) => {
+const sync = connect('remote', onMsg, (s) => {
   if (s !== 'offline') sync.send({ t: 'hello' });
   render();
 });

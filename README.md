@@ -12,19 +12,21 @@ Interactive globe for client events. All of Asia is highlighted, plus Sweden. So
 - **Vite + TypeScript**, no framework
 - **globe.gl / three.js** for the globe; a 2D canvas overlay handles the particles
 - **Natural Earth 1:50m** for country borders (`public/data/world.topo.json`, built with `npm run geo`)
-- **Supabase Realtime (broadcast)** syncs the iPad and the big screen. It needs no database tables. Without config, it falls back to `BroadcastChannel` (two tabs in the same browser, for testing).
+- **Sync via Upstash Redis.** The iPad posts commands to `/api/sync` (a Vercel function), and the display polls about 4×/s. The Redis token stays server-side; the app only stores the latest commands and display state (6 h TTL). Without Redis it falls back to `BroadcastChannel` (two tabs in the same browser, for testing).
 - **Vercel** for hosting (`vercel.json`, clean URL `/remote`)
 
 ## Get started
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in Supabase URL + publishable key + room name
 npm run dev                  # http://localhost:5173  and  http://localhost:5173/remote
+npx vercel dev               # with /api + Redis locally (needs env vars, see .env.example)
 npm run build
 ```
 
-Without `.env.local`, open `/` and `/remote` in two tabs of the **same** browser to test.
+With `npm run dev` (no `/api`), open `/` and `/remote` in two tabs of the **same** browser to test.
+
+**Redis on Vercel:** Vercel → Project → Storage/Marketplace → Upstash Redis → Connect (sets `KV_REST_API_URL`/`KV_REST_API_TOKEN`), or set `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` manually. Redeploy. The app detects Redis automatically.
 
 Keyboard on the display: `f` = fullscreen, `Esc` = close the panel. You can also click countries with the mouse.
 
@@ -33,7 +35,7 @@ Keyboard on the display: `f` = fullscreen, `Esc` = close the panel. You can also
 1. Laptop: open the URL in Chrome, press `f` for fullscreen and turn off sleep/screensaver.
 2. iPad: open `/remote` → Share → "Add to Home Screen" so it runs without the browser chrome.
    Turn on **Guided Access** (Settings → Accessibility) so clients can't leave the app.
-3. Check that the dot at the top right of the iPad says "Ansluten" (connected).
+3. Check that the dot at the top right of the iPad says "Ansluten" (connected). On the display, the small dot at the top right is green when Redis sync is active, orange in local mode.
 4. Optional, for offline robustness: run `npm run photos` before the build so the photos are bundled locally (see below).
 
 ## Content / data
@@ -49,7 +51,8 @@ Logo: put the firm's logo at `public/logo.svg` and it shows at the bottom right.
 ## Security / data protection
 
 - The app shows public macro data only. It stores no personal or client data and uses no cookies or tracking.
-- Sync uses Supabase's **publishable** key, which is public by design. Anyone who knows the channel name (`VITE_ROOM`) and the key could in theory control the screen. Use a random room name for the event.
+- The Redis token is only in Vercel's server environment, never in the browser. `/api/sync` validates every message (country code, tab, state).
+- The URL has no login (by choice: fixed URL, no pairing). Anyone who knows the URL could control the screen, so set a random `VITE_ROOM` for the event and don't share the `/remote` link.
 
 ## Credits
 

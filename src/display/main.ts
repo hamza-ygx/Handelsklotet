@@ -152,9 +152,9 @@ const panel = new Panel(panelEl, (tab) => setTab(tab));
 
 void loadPhotos();
 void loadFx();
-sync = connect(onMsg, (s: SyncStatus) => {
+sync = connect('display', onMsg, (s: SyncStatus) => {
   statusEl.dataset.state = s;
-  statusEl.title = { online: 'Ansluten', local: 'Lokalt läge (ingen molnsynk)', offline: 'Frånkopplad' }[s];
+  statusEl.title = { online: 'Ansluten', local: 'Lokalt läge (ingen synk mellan enheter)', offline: 'Frånkopplad' }[s];
   if (s === 'online') broadcast();
 });
 setInterval(broadcast, 4000);
