@@ -13,7 +13,9 @@ const REGIONS: Region[] = ['Östasien', 'Sydostasien', 'Sydasien', 'Västasien',
 const view = { iso: null as string | null, tab: 'oversikt' as TabId, busy: false, lastSeen: 0 };
 let lockUntil = 0;
 
+let syncMode: 'online' | 'local' | 'offline' = 'local';
 const sync = connect('remote', onMsg, (s) => {
+  syncMode = s;
   if (s !== 'offline') sync.send({ t: 'hello' });
   render();
 });
@@ -130,8 +132,10 @@ function render() {
   document.querySelectorAll<HTMLElement>('[data-iso]').forEach((el) => el.classList.toggle('selected', el.dataset.iso === view.iso));
 
   const conn = $('conn');
-  conn.dataset.state = alive ? 'ok' : 'wait';
-  conn.querySelector('em')!.textContent = alive ? 'Ansluten' : 'Söker skärmen…';
+  conn.dataset.state = alive ? 'ok' : syncMode === 'online' ? 'wait' : 'bad';
+  conn.querySelector('em')!.textContent = alive
+    ? 'Ansluten'
+    : { online: 'Söker skärmen… (öppna samma adress på TV:n)', local: 'Ingen synk – Redis är inte kopplad', offline: 'Nätverksfel – kontrollera wifi' }[syncMode];
 }
 
 document.addEventListener('gesturestart', (e) => e.preventDefault());

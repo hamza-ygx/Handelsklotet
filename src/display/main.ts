@@ -144,6 +144,7 @@ void loadPhotos();
 void loadFx();
 sync = connect('display', onMsg, (s: SyncStatus) => {
   statusEl.dataset.state = s;
+  $('status-text').textContent = { online: '', local: 'Ingen synk – Redis är inte kopplad', offline: 'Nätverksfel – synk saknas' }[s];
   statusEl.title = { online: 'Ansluten', local: 'Lokalt läge (ingen synk mellan enheter)', offline: 'Frånkopplad' }[s];
   if (s === 'online') broadcast();
 });
