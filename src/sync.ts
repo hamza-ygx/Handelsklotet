@@ -15,13 +15,14 @@ export function connect(role: Role, onMsg: Handler, onStatus: (s: SyncStatus) =>
   let remoteOn = false;
   let after = -1;
   const seen = new Set<number>();
+  let floor = Infinity;
   let failures = 0;
   let lastStateAt = 0;
 
   async function poll() {
     try {
       const q = new URLSearchParams({ room: ROOM, role });
-      if (role === 'display') q.set('after', String(after - 10));
+      if (role === 'display') q.set('after', String(Math.max(0, after)));
       const r = await fetch(`${API}?${q}`, { cache: 'no-store' });
       if (!r.ok) throw new Error(String(r.status));
       if (!r.headers.get('content-type')?.includes('json')) {
@@ -37,14 +38,15 @@ export function connect(role: Role, onMsg: Handler, onStatus: (s: SyncStatus) =>
         remoteOn = true;
         onStatus('online');
         if (role === 'display') {
+          // ignore commands that were sent before this screen opened
           after = j.last;
-          for (let i = Math.max(0, j.last - 10); i <= j.last; i++) seen.add(i);
+          floor = j.last;
         }
       }
       failures = 0;
       if (role === 'display') {
         for (const c of (j.cmds as { id: number; msg: Msg }[]).sort((a, b) => a.id - b.id)) {
-          if (seen.has(c.id) || c.id <= after - 10) continue;
+          if (seen.has(c.id) || c.id <= floor) continue;
           seen.add(c.id);
           after = Math.max(after, c.id);
           onMsg(c.msg);
