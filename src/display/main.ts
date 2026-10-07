@@ -101,9 +101,13 @@ async function openCountry(iso: string) {
       document.body.classList.add('panel-open');
     }
   });
+  // the panel covers the globe: stop rendering it until the panel closes
+  await wait(700);
+  if (state.iso === iso) globe.setPaused(true);
 }
 
 async function closeCurrent(switching: boolean) {
+  globe.setPaused(false);
   const rect = panel.rect();
   panel.hide();
   document.body.classList.remove('panel-open');

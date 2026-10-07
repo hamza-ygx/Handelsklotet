@@ -1,6 +1,6 @@
 :root {
   --bg: #040914;
-  --surface: rgba(12, 22, 40, 0.86);
+  --surface: rgba(9, 16, 30, 0.95);
   --surface-2: rgba(255, 255, 255, 0.04);
   --line: rgba(255, 255, 255, 0.08);
   --ink: #f3f5f9;
@@ -73,7 +73,6 @@ body.panel-open #veil { opacity: 1; }
   border: 1px solid rgba(242, 184, 75, 0.35);
   border-radius: 999px;
   background: rgba(10, 20, 38, 0.6);
-  backdrop-filter: blur(8px);
   font-size: calc(var(--u) * 1.15);
   color: var(--ink-2);
   transition: opacity 0.5s ease;
@@ -91,6 +90,7 @@ body.panel-open #veil { opacity: 1; }
   100% { box-shadow: 0 0 0 0 rgba(242, 184, 75, 0); }
 }
 body.focused .hint, body.focused .brand { opacity: 0; }
+body.focused .pulse { animation: none; }
 
 .firm {
   position: fixed;
@@ -136,7 +136,6 @@ body.focused .hint, body.focused .brand { opacity: 0; }
   background: var(--surface);
   border: 1px solid rgba(242, 184, 75, 0.25);
   box-shadow: 0 30px 120px rgba(0, 0, 0, 0.6), 0 0 80px rgba(242, 184, 75, 0.08);
-  backdrop-filter: blur(18px);
   opacity: 0;
   visibility: hidden;
   transform: scale(0.97);
@@ -177,7 +176,6 @@ body.focused .hint, body.focused .brand { opacity: 0; }
   padding: calc(var(--u) * 0.4) calc(var(--u) * 0.9);
   border-radius: 999px;
   background: rgba(4, 9, 20, 0.55);
-  backdrop-filter: blur(6px);
   color: var(--ink-2);
 }
 .fact {

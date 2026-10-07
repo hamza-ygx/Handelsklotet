@@ -12,7 +12,7 @@ interface P {
   warm: boolean;
 }
 
-const COUNT = 2600;
+const COUNT = 1800;
 const SPREAD = 0.4;
 
 function easeInOut(t: number) {
@@ -36,7 +36,7 @@ export class Particles {
   private ctx: CanvasRenderingContext2D;
   private gold = sprite('rgba(242,184,75,0.9)');
   private pale = sprite('rgba(255,236,200,0.8)');
-  private dpr = Math.min(2, window.devicePixelRatio || 1);
+  private dpr = 1;
 
   constructor(private canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d')!;
