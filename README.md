@@ -10,8 +10,8 @@ Interactive globe for client events. All of Asia is highlighted, plus Sweden. So
 ## Stack
 
 - **Vite + TypeScript**, no framework
-- **three.js with a custom shader globe**: day/night textures, city lights, clouds, ocean reflection and atmosphere. Asia is highlighted via a mask texture (gold borders); no 3D country geometry is involved. A 2D canvas overlay handles the particles.
-- **Performance**: pixel ratio max 1.5 and lowered automatically if frames stay slow; the globe stops rendering while the panel is open; no `backdrop-filter`.
+- **three.js with a custom shader globe**: day/night textures, city lights, clouds, ocean reflection and atmosphere. Asia is highlighted via a mask texture (gold borders); no 3D country geometry is involved. Particles (5,000 with motion trails) are animated entirely on the GPU in the same WebGL canvas, and so are the twinkling stars.
+- **Performance**: one WebGL canvas for globe, stars and particles; pixel ratio max 1.5 and lowered automatically if frames stay slow; rendering stops while the panel covers the globe; country selection uses a small raster (no polygon geometry, no heavy point-in-polygon sampling); no `backdrop-filter`.
 - **Natural Earth 1:50m** for country borders (`public/data/world.topo.json`, built with `npm run geo`)
 - **Sync via Upstash Redis.** The iPad posts commands to `/api/sync` (a Vercel function), and the display polls about 4×/s. The Redis token stays server-side; the app only stores the latest commands and display state (6 h TTL). Without Redis it falls back to `BroadcastChannel` (two tabs in the same browser, for testing).
 - **Vercel** for hosting (`vercel.json`, clean URL `/remote`)

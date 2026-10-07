@@ -7,7 +7,6 @@ import { connect, type SyncStatus } from '../sync';
 import type { Msg, TabId } from '../types';
 import { GlobeView, wait, type Pt } from './globe';
 import { Panel } from './panel';
-import { Particles } from './particles';
 
 type Req = { t: 'select'; iso: string } | { t: 'close' };
 
@@ -83,26 +82,26 @@ async function run(r: Req) {
 async function openCountry(iso: string) {
   const c = BY_ISO.get(iso)!;
   document.body.classList.add('focused');
+  panel.render(c, 'oversikt');
   await globe.focus(iso);
   await globe.lift(iso);
-  homePoints = globe.sample(iso, 1400);
+  homePoints = globe.sample(iso, 2400);
   globe.hide(iso);
 
   state.iso = iso;
   state.tab = 'oversikt';
-  panel.render(c, state.tab);
   broadcast();
 
   let shown = false;
-  await particles.fly(homePoints, panel.rect(), 'out', 1700, (t) => {
-    if (!shown && t > 0.62) {
+  await globe.fly(homePoints, panel.rect(), 'out', 1900, (t) => {
+    if (!shown && t > 0.6) {
       shown = true;
       panel.show();
       document.body.classList.add('panel-open');
     }
   });
   // the panel covers the globe: stop rendering it until the panel closes
-  await wait(700);
+  await wait(900);
   if (state.iso === iso) globe.setPaused(true);
 }
 
@@ -112,11 +111,17 @@ async function closeCurrent(switching: boolean) {
   panel.hide();
   document.body.classList.remove('panel-open');
   if (switching) {
-    await wait(250);
+    globe.hide(null);
+    await wait(320);
   } else {
-    await particles.fly(homePoints, rect, 'in', 1300);
+    let restored = false;
+    await globe.fly(homePoints, rect, 'in', 1500, (t) => {
+      if (!restored && t > 0.72) {
+        restored = true;
+        globe.hide(null);
+      }
+    });
   }
-  globe.hide(null);
   await globe.lift(null);
   state.iso = null;
   if (!switching) {
@@ -131,27 +136,8 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'f') document.documentElement.requestFullscreen?.();
 });
 
-function drawStars() {
-  const c = document.createElement('canvas');
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
-  c.width = window.innerWidth * dpr;
-  c.height = window.innerHeight * dpr;
-  const g = c.getContext('2d')!;
-  for (let i = 0; i < 700; i++) {
-    const r = Math.random() ** 3 * 1.4 * dpr + 0.3;
-    g.fillStyle = `rgba(${200 + Math.random() * 55},${210 + Math.random() * 45},255,${0.15 + Math.random() * 0.6})`;
-    g.beginPath();
-    g.arc(Math.random() * c.width, Math.random() * c.height, r, 0, Math.PI * 2);
-    g.fill();
-  }
-  $('stars').replaceChildren(c);
-}
-drawStars();
-window.addEventListener('resize', drawStars);
-
 const features = await loadCountries();
 const globe = new GlobeView(stage, features, (iso) => request({ t: 'select', iso }));
-const particles = new Particles($('particles'));
 const panel = new Panel(panelEl, (tab) => setTab(tab));
 
 void loadPhotos();
@@ -163,4 +149,5 @@ sync = connect('display', onMsg, (s: SyncStatus) => {
 });
 setInterval(broadcast, 4000);
 broadcast();
-document.body.classList.add('ready');
+await globe.ready;
+requestAnimationFrame(() => document.body.classList.add('ready'));

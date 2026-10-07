@@ -10,10 +10,36 @@ function esc(s: string) {
   return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 }
 
+const NUM_RE = /^([+−-]?)(\d[\d\s\u00a0\u202f]*(?:,\d+)?)(.*)$/;
+
+/** Wrap the numeric part so it can count up; text values pass through. */
+function countable(value: string) {
+  const m = value.match(NUM_RE);
+  if (!m) return esc(value);
+  const n = Number(m[2].replace(/[\s\u00a0\u202f]/g, '').replace(',', '.'));
+  const d = m[2].includes(',') ? m[2].split(',')[1].length : 0;
+  return `${esc(m[1])}<span class="n" data-v="${n}" data-d="${d}">${esc(m[2])}</span>${esc(m[3])}`;
+}
+
+function countUp(root: HTMLElement) {
+  const els = [...root.querySelectorAll<HTMLElement>('.n')];
+  if (!els.length) return;
+  const t0 = performance.now();
+  const ms = 1100;
+  const fmt = els.map((el) => new Intl.NumberFormat('sv-SE', { minimumFractionDigits: +el.dataset.d!, maximumFractionDigits: +el.dataset.d! }));
+  const step = (now: number) => {
+    const t = Math.min(1, (now - t0) / ms);
+    const e = 1 - Math.pow(1 - t, 4);
+    els.forEach((el, i) => (el.textContent = fmt[i].format(+el.dataset.v! * e)));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
 function kpi(label: string, value: string, unit = '', note = '', extra = '', text = false) {
   return `<div class="kpi">
     <div class="kpi-label">${esc(label)}</div>
-    <div class="kpi-value${text ? ' kpi-text' : ''}">${esc(value)}${unit ? `<span class="kpi-unit">${esc(unit)}</span>` : ''}</div>
+    <div class="kpi-value${text ? ' kpi-text' : ''}">${text ? esc(value) : countable(value)}${unit ? `<span class="kpi-unit">${esc(unit)}</span>` : ''}</div>
     ${extra}
     ${note ? `<div class="kpi-note">${esc(note)}</div>` : ''}
   </div>`;
@@ -127,7 +153,7 @@ export class Panel {
     const photo = photoFor(c.iso);
     this.el.innerHTML = `
       <div class="panel-photo">
-        ${photo ? `<img src="${esc(photo.src)}" alt="${esc(c.photo.caption)}"/>` : ''}
+        ${photo ? `<img src="${esc(photo.src)}" alt="${esc(c.photo.caption)}" decoding="async"/>` : ''}
         <div class="photo-shade"></div>
         <div class="photo-caption">${esc(c.photo.caption)}</div>
         <div class="fact"><div class="eyebrow">Visste du?</div><p>${esc(c.fact)}</p></div>
@@ -159,12 +185,15 @@ export class Panel {
     content.classList.add('swap');
     setTimeout(() => {
       content.innerHTML = RENDER[tab](this.country!);
+      content.classList.add('instant');
       content.classList.remove('swap');
-    }, 180);
+      countUp(content);
+    }, 160);
   }
 
   show() {
     this.el.classList.add('open');
+    countUp(this.el);
   }
 
   hide() {
