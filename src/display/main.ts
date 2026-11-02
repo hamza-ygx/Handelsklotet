@@ -94,7 +94,7 @@ async function openCountry(iso: string) {
   broadcast();
 
   let shown = false;
-  await globe.fly(homePoints, panel.rect(), 'out', 1900, (t) => {
+  await globe.fly(homePoints, panel.rect(), 'out', 1270, (t) => {
     if (!shown && t > 0.6) {
       shown = true;
       panel.show();
@@ -102,7 +102,7 @@ async function openCountry(iso: string) {
     }
   });
   // the panel covers the globe: stop rendering it until the panel closes
-  await wait(900);
+  await wait(600);
   if (state.iso === iso) globe.setPaused(true);
 }
 
@@ -113,10 +113,10 @@ async function closeCurrent(switching: boolean) {
   document.body.classList.remove('panel-open');
   if (switching) {
     globe.hide(null);
-    await wait(320);
+    await wait(210);
   } else {
     let restored = false;
-    await globe.fly(homePoints, rect, 'in', 1500, (t) => {
+    await globe.fly(homePoints, rect, 'in', 1000, (t) => {
       if (!restored && t > 0.72) {
         restored = true;
         globe.hide(null);

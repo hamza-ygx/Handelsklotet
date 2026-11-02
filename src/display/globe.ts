@@ -456,8 +456,8 @@ export class GlobeView {
       this.pov = this.swayAt(this.phase);
     }
 
-    this.glow = approach(this.glow, this.glowTarget, 7, dt);
-    this.hole = approach(this.hole, this.holeTarget, 9, dt);
+    this.glow = approach(this.glow, this.glowTarget, 10.5, dt);
+    this.hole = approach(this.hole, this.holeTarget, 13.5, dt);
     const u = this.earthMat.uniforms;
     u.uGlow.value = this.glow;
     u.uHole.value = this.hole;
@@ -517,7 +517,7 @@ export class GlobeView {
     return this.particles.fly(points, rect, dir, ms, onProgress);
   }
 
-  focus(iso: string, ms = 1400): Promise<void> {
+  focus(iso: string, ms = 930): Promise<void> {
     const f = this.byIso.get(iso);
     if (!f) return Promise.resolve();
     this.idle = false;
@@ -535,7 +535,7 @@ export class GlobeView {
     }
     this.showRaster(this.rasterize(iso));
     this.glowTarget = 1;
-    return new Promise<void>((r) => setTimeout(r, 420));
+    return new Promise<void>((r) => setTimeout(r, 280));
   }
 
   /** iso: country leaves the map (dark hole). null: it fades back in. */
@@ -549,7 +549,7 @@ export class GlobeView {
     }
   }
 
-  release(ms = 2000) {
+  release(ms = 1330) {
     return this.animateTo(this.swayAt(this.phase), ms).then(() => {
       this.idle = true;
     });

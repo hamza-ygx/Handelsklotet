@@ -34,7 +34,7 @@ function onMsg(m: Msg) {
 function send(m: Msg) {
   const now = Date.now();
   if (now < lockUntil) return;
-  lockUntil = now + 450;
+  lockUntil = now + 300;
   if (m.t === 'select') view.iso = m.iso;
   if (m.t === 'tab') view.tab = m.tab;
   sync.send(m);

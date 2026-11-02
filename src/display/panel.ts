@@ -25,7 +25,7 @@ function countUp(root: HTMLElement) {
   const els = [...root.querySelectorAll<HTMLElement>('.n')];
   if (!els.length) return;
   const t0 = performance.now();
-  const ms = 1100;
+  const ms = 730;
   const fmt = els.map((el) => new Intl.NumberFormat('sv-SE', { minimumFractionDigits: +el.dataset.d!, maximumFractionDigits: +el.dataset.d! }));
   const step = (now: number) => {
     const t = Math.min(1, (now - t0) / ms);
@@ -188,7 +188,7 @@ export class Panel {
       content.classList.add('instant');
       content.classList.remove('swap');
       countUp(content);
-    }, 160);
+    }, 110);
   }
 
   show() {
