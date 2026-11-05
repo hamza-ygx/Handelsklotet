@@ -329,7 +329,7 @@ export class GlobeView {
     const g = c.getContext('2d')!;
     const path = geoPath(geoEquirectangular().scale(W / (2 * Math.PI)).translate([W / 2, H / 2]), g);
     g.globalCompositeOperation = 'lighter';
-    const hl = features.filter((f) => f.properties.hl);
+    const hl = features.filter((f) => f.properties.hl || f.clickable);
     for (const f of hl) {
       g.beginPath();
       path(f);
@@ -358,7 +358,8 @@ export class GlobeView {
     if (this.raster?.iso === iso) return this.raster;
     const f = this.byIso.get(iso);
     if (!f) return null;
-    let [[lon0, lat0], [lon1, lat1]] = geoBounds(f);
+    const m = f.main;
+    let [[lon0, lat0], [lon1, lat1]] = geoBounds(m);
     if (lon1 < lon0 || lon1 - lon0 > 300) [lon0, lon1] = [-180, 180];
     const pad = Math.max(0.6, (lon1 - lon0) * 0.04);
     lon0 = Math.max(-180, lon0 - pad);
@@ -377,10 +378,10 @@ export class GlobeView {
     const proj = geoEquirectangular().scale(k).translate([(-lon0 * Math.PI * k) / 180, (lat1 * Math.PI * k) / 180]);
     g.fillStyle = '#fff';
     g.beginPath();
-    geoPath(proj, g)(f);
+    geoPath(proj, g)(m);
     g.fill();
-    if (geoArea(f) < TINY) {
-      const [x, y] = proj(geoCentroid(f)) ?? [W / 2, H / 2];
+    if (geoArea(m) < TINY) {
+      const [x, y] = proj(geoCentroid(m)) ?? [W / 2, H / 2];
       g.beginPath();
       g.arc(x, y, Math.max(2, W / 60), 0, Math.PI * 2);
       g.fill();
@@ -408,9 +409,13 @@ export class GlobeView {
   }
 
   private swayAt(phase: number): Pov {
+    // Europe → Asia → Australia; the shaped sine lingers over Asia in the middle
+    const s = Math.sin(phase * 0.045);
+    const k = Math.sign(s) * Math.pow(Math.abs(s), 1.6);
+    const lng = 80 + 62 * k;
     return {
-      lng: 84 + 30 * Math.sin(phase * 0.06),
-      lat: 28 + 7 * Math.sin(phase * 0.037),
+      lng,
+      lat: 28 - (lng - 80) * 0.26 + 5 * Math.sin(phase * 0.031),
       dist: IDLE_DIST,
       shift: IDLE_SHIFT,
     };
@@ -522,8 +527,8 @@ export class GlobeView {
     if (!f) return Promise.resolve();
     this.idle = false;
     this.rasterize(iso);
-    const [lng, lat] = geoCentroid(f);
-    const dist = Math.min(3.1, Math.max(1.75, 1.55 + Math.sqrt(geoArea(f)) * 3.4));
+    const [lng, lat] = geoCentroid(f.main);
+    const dist = Math.min(3.1, Math.max(1.75, 1.55 + Math.sqrt(geoArea(f.main)) * 3.4));
     return this.animateTo({ lat, lng, dist, shift: 0 }, ms);
   }
 

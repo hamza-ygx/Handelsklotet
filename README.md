@@ -1,6 +1,6 @@
 # Handelsklotet
 
-Interactive globe for client events. All of Asia is highlighted, plus Sweden. Someone taps a country on an iPad, the country lifts off the globe as particles that fly up into the screen, and they build a panel. The panel shows the economy, trade, finance, e-commerce and the Sweden angle for that country. The UI is in Swedish.
+Interactive globe for client events. All of Asia is highlighted, plus 29 clickable countries across Asia, the Middle East, the Nordics, Europe and Australia. Someone taps a country on an iPad, the country lifts off the globe as particles that fly up into the screen, and they build a panel. The panel shows the economy, trade, finance, e-commerce and the Sweden angle for that country. The UI is in Swedish.
 
 | URL | Device | Contents |
 |---|---|---|
@@ -37,7 +37,7 @@ Keyboard on the display: `f` = fullscreen, `Esc` = close the panel. You can also
 
 ## Content / data
 
-All figures live in `src/data/countries.ts`, one object per country. To add a country, add an object. It becomes clickable automatically if its ISO code exists on the map.
+All figures live in `src/data/countries.ts`, one object per country. To add a country, add an object (and its flag in `public/flags/`). It becomes clickable and gold-highlighted automatically if its ISO code exists on the map. Set `dataNote` to show an "uncertain figures" badge (used for Syria, Lebanon and Iraq).
 
 > ⚠️ **The figures are compiled from public sources (IMF, World Bank, SCB etc.), rounded, and mostly from 2024. Verify and update them before the event.** Prioritise: policy rates, growth, Sweden's trade per country (SCB), and the e-commerce estimates. Exchange rates are fetched live from the ECB (frankfurter.dev) where available, otherwise an approximate static rate is shown.
 

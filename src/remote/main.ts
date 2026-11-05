@@ -8,7 +8,7 @@ import { TABS, type Msg, type Region, type TabId } from '../types';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const SVGNS = 'http://www.w3.org/2000/svg';
-const REGIONS: Region[] = ['Östasien', 'Sydostasien', 'Sydasien', 'Västasien', 'Europa'];
+const REGIONS: Region[] = ['Östasien', 'Sydostasien', 'Sydasien', 'Mellanöstern', 'Norden', 'Europa', 'Oceanien'];
 
 const view = { iso: null as string | null, tab: 'oversikt' as TabId, busy: false, lastSeen: 0 };
 let lockUntil = 0;
@@ -44,8 +44,8 @@ function send(m: Msg) {
 /* ---------- Map ---------- */
 function buildMap(features: CountryFeature[]) {
   const host = $('map');
-  const hl = features.filter((f) => f.properties.hl);
-  const proj = geoAzimuthalEqualArea().rotate([-82, -38]);
+  const hl = features.filter((f) => f.properties.hl || f.clickable).map((f) => f.main);
+  const proj = geoAzimuthalEqualArea().rotate([-72, -24]);
   const svg = document.createElementNS(SVGNS, 'svg');
   const W = 1000, H = 760;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);

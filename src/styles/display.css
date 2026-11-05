@@ -414,3 +414,15 @@ body.qr-ready:not(.paired) .pair { opacity: 1; transform: none; }
 .pair-text span { font-size: calc(var(--u) * 0.95); color: var(--ink-3); }
 /* the "choose a country" hint only makes sense once a controller is connected */
 body:not(.paired) .hint { opacity: 0; }
+
+.data-note {
+  margin-top: calc(var(--u) * 0.6);
+  width: fit-content;
+  font-size: calc(var(--u) * 0.9);
+  color: #ffd79a;
+  padding: calc(var(--u) * 0.3) calc(var(--u) * 0.9);
+  border-radius: 999px;
+  border: 1px solid rgba(242, 184, 75, 0.45);
+  background: rgba(242, 184, 75, 0.1);
+}
+.data-note::before { content: '⚠ '; }

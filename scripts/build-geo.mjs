@@ -18,7 +18,9 @@ const features = geo.features
   .filter((f) => !EXCLUDE.has(f.properties.ADM0_A3))
   .map((f) => {
     const p = f.properties;
-    const iso = p.ISO_A2_EH !== '-99' ? p.ISO_A2_EH : p.ADM0_A3;
+    let iso = p.ISO_A2_EH !== '-99' ? p.ISO_A2_EH : p.ADM0_A3;
+    // dependencies that share their sovereign's ISO code (e.g. Christmas Island → AU) get their own id
+    if (p.ISO_A3_EH !== '-99' && p.ADM0_A3 !== p.ISO_A3_EH && p.TYPE === 'Dependency') iso = p.ADM0_A3;
     const asia = (p.CONTINENT === 'Asia' && !NOT_ASIA.has(p.ADM0_A3)) || EXTRA_HIGHLIGHT.has(iso);
     return {
       type: 'Feature',

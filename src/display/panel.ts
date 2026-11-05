@@ -168,6 +168,7 @@ export class Panel {
           </div>
         </header>
         <p class="tagline">${esc(c.tagline)}</p>
+        ${c.dataNote ? `<p class="data-note">${esc(c.dataNote)}</p>` : ''}
         <nav class="tabs">${TABS.map((t) => `<button data-tab="${t.id}" class="${t.id === tab ? 'active' : ''}">${t.label}</button>`).join('')}</nav>
         <section class="tab-content">${RENDER[tab](c)}</section>
         <footer class="panel-foot">Avrundade värden, senast tillgängliga år (${DATA_YEAR}). Källor: IMF, Världsbanken, SCB m.fl. Ej investeringsrådgivning.</footer>

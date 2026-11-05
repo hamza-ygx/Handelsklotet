@@ -8,7 +8,7 @@ export const TABS: { id: TabId; label: string }[] = [
   { id: 'sverige', label: 'Sverige' },
 ];
 
-export type Region = 'Östasien' | 'Sydostasien' | 'Sydasien' | 'Västasien' | 'Europa';
+export type Region = 'Östasien' | 'Sydostasien' | 'Sydasien' | 'Mellanöstern' | 'Norden' | 'Europa' | 'Oceanien';
 
 export interface Country {
   iso: string;
@@ -16,6 +16,8 @@ export interface Country {
   region: Region;
   capital: string;
   tagline: string;
+  /** Shown as a warning chip when figures are uncertain or outdated. */
+  dataNote?: string;
   fact: string;
   photo: { wiki: string; caption: string };
   macro: {
