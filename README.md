@@ -26,7 +26,7 @@ npm run build
 
 Open `/` and scan the QR code (or open the link it encodes) on another device on the internet. Two tabs in the same browser also work via `BroadcastChannel`.
 
-Keyboard on the display: `f` = fullscreen, `Esc` = close the panel. You can also click countries with the mouse.
+Keyboard and mouse on the display: `f` = fullscreen, `Esc` = close the panel. Drag to rotate the globe (with momentum), scroll to zoom, click a country to open it. After ~8 s without input it glides back to the idle sway. The iPad remote cannot rotate the globe.
 
 ## Event day
 

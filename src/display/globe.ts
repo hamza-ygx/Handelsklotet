@@ -197,6 +197,14 @@ export class GlobeView {
   private idle = true;
   private phase = 0;
   private paused = false;
+  // mouse control on the display (the iPad remote cannot rotate the globe)
+  private locked = false;
+  private user = false;
+  private dragging = false;
+  private dragMoved = false;
+  private lastPt = { x: 0, y: 0, t: 0 };
+  private vel = { lat: 0, lng: 0 };
+  private userUntil = 0;
   private last = performance.now();
   private glow = 0;
   private glowTarget = 0;
@@ -297,9 +305,11 @@ export class GlobeView {
     }
 
     this.renderer.domElement.addEventListener('click', (e) => {
+      if (this.dragMoved) return;
       const hit = this.pick(e.clientX, e.clientY);
       if (hit) onPick(hit);
     });
+    this.bindMouse();
     window.addEventListener('resize', () => this.resize());
     this.resize();
     this.renderer.setAnimationLoop(this.tick);
@@ -456,6 +466,20 @@ export class GlobeView {
         this.tween = null;
         done();
       }
+    } else if (this.user) {
+      if (!this.dragging) {
+        // momentum after a flick
+        const decay = Math.exp(-4 * dt);
+        this.vel.lat *= decay;
+        this.vel.lng *= decay;
+        this.pov = { ...this.pov, lat: Math.max(-75, Math.min(80, this.pov.lat + this.vel.lat * dt)), lng: this.pov.lng + this.vel.lng * dt };
+        if (performance.now() > this.userUntil) {
+          this.user = false;
+          void this.animateTo(this.swayAt(this.phase), 2200).then(() => {
+            if (!this.locked && !this.user) this.idle = true;
+          });
+        }
+      }
     } else if (this.idle) {
       this.phase += dt;
       this.pov = this.swayAt(this.phase);
@@ -522,10 +546,75 @@ export class GlobeView {
     return this.particles.fly(points, rect, dir, ms, onProgress);
   }
 
+  private bindMouse() {
+    const el = this.renderer.domElement;
+    el.style.cursor = 'grab';
+    el.style.touchAction = 'none';
+    const degPerPx = () => 0.075 * (this.pov.dist - 1);
+    const takeOver = () => {
+      this.idle = false;
+      this.user = true;
+      this.tween = null;
+      this.userUntil = performance.now() + 8000;
+    };
+    el.addEventListener('pointerdown', (e) => {
+      if (this.locked || e.button !== 0) return;
+      takeOver();
+      this.dragging = true;
+      this.dragMoved = false;
+      this.vel = { lat: 0, lng: 0 };
+      this.lastPt = { x: e.clientX, y: e.clientY, t: performance.now() };
+      el.setPointerCapture(e.pointerId);
+      el.style.cursor = 'grabbing';
+    });
+    el.addEventListener('pointermove', (e) => {
+      if (!this.dragging) return;
+      const now = performance.now();
+      const dx = e.clientX - this.lastPt.x;
+      const dy = e.clientY - this.lastPt.y;
+      if (Math.abs(dx) + Math.abs(dy) > 0) {
+        if (Math.hypot(dx, dy) > 3) this.dragMoved = true;
+        const k = degPerPx();
+        const dLng = -dx * k;
+        const dLat = dy * k;
+        this.pov = { ...this.pov, lat: Math.max(-75, Math.min(80, this.pov.lat + dLat)), lng: this.pov.lng + dLng };
+        const dts = Math.max(0.008, (now - this.lastPt.t) / 1000);
+        this.vel = { lat: this.vel.lat * 0.6 + (dLat / dts) * 0.4, lng: this.vel.lng * 0.6 + (dLng / dts) * 0.4 };
+        this.lastPt = { x: e.clientX, y: e.clientY, t: now };
+      }
+    });
+    const end = (e: PointerEvent) => {
+      if (!this.dragging) return;
+      this.dragging = false;
+      el.style.cursor = 'grab';
+      if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+      if (performance.now() - this.lastPt.t > 80) this.vel = { lat: 0, lng: 0 };
+      this.userUntil = performance.now() + 8000;
+      // let the click handler see dragMoved, then reset
+      setTimeout(() => (this.dragMoved = false), 0);
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+    el.addEventListener(
+      'wheel',
+      (e) => {
+        if (this.locked) return;
+        e.preventDefault();
+        takeOver();
+        this.vel = { lat: 0, lng: 0 };
+        this.pov = { ...this.pov, dist: Math.max(1.8, Math.min(5, this.pov.dist * (1 + e.deltaY * 0.0012))) };
+      },
+      { passive: false },
+    );
+  }
+
   focus(iso: string, ms = 930): Promise<void> {
     const f = this.byIso.get(iso);
     if (!f) return Promise.resolve();
     this.idle = false;
+    this.user = false;
+    this.dragging = false;
+    this.locked = true;
     this.rasterize(iso);
     const [lng, lat] = geoCentroid(f.main);
     const dist = Math.min(3.1, Math.max(1.75, 1.55 + Math.sqrt(geoArea(f.main)) * 3.4));
@@ -556,7 +645,8 @@ export class GlobeView {
 
   release(ms = 1330) {
     return this.animateTo(this.swayAt(this.phase), ms).then(() => {
-      this.idle = true;
+      this.locked = false;
+      if (!this.user) this.idle = true;
     });
   }
 
