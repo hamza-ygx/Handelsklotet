@@ -40,6 +40,8 @@ export interface Country {
     code: string;
     policyRate: number | null;
     policyNote?: string;
+    /** When the policy rate was last confirmed, e.g. 'nov 2026'. Defaults to Dec of DATA_YEAR. */
+    policyAsOf?: string;
     index: string;
     rating: string;
     fdi: number | null;

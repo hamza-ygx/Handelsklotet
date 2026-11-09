@@ -89,14 +89,14 @@ function trade(c: Country) {
 function finance(c: Country) {
   const f = c.finance;
   const fx = sekPer(f.code, f.fxFallback);
-  const fdi = f.fdi != null ? usdBn(f.fdi) : null;
+  const fdi = f.fdi != null ? usdBn(Math.abs(f.fdi)) : null;
   return `<div class="kpis">
       ${kpi('Valuta', f.code, '', f.currency)}
       ${f.code === 'SEK' ? kpi('Växelkurs', '—', '', 'Hemmavaluta') : kpi(`1 ${f.code}`, sek(fx.value), '', fx.live ? `ECB-kurs ${fx.date ?? ''}` : 'Ungefärlig kurs')}
-      ${kpi('Styrränta', f.policyRate != null ? pct(f.policyRate, 2) : '—', '', f.policyNote ?? `Dec ${DATA_YEAR}`)}
+      ${kpi('Styrränta', f.policyRate != null ? pct(f.policyRate, 2) : '—', '', [f.policyNote, f.policyAsOf ?? `dec ${DATA_YEAR}`].filter(Boolean).join(' · '))}
       ${kpi('Börsindex', f.index, '', '', '', true)}
       ${kpi('Kreditbetyg', f.rating, '', '', '', true)}
-      ${fdi ? kpi('Utländska direktinvesteringar', fdi.value, fdi.unit, `Inflöde ${DATA_YEAR}`) : kpi('Utländska direktinvesteringar', '—', '', 'Ej tillgängligt')}
+      ${fdi ? kpi('Utländska direktinvesteringar', `${f.fdi! < 0 ? '−' : ''}${fdi.value}`, fdi.unit, f.fdi! < 0 ? `Nettoutflöde ${DATA_YEAR}` : `Inflöde ${DATA_YEAR}`) : kpi('Utländska direktinvesteringar', '—', '', 'Ej tillgängligt')}
     </div>`;
 }
 
