@@ -53,7 +53,7 @@ export function pairBars(a: { label: string; value: number }, b: { label: string
   const row = (r: { label: string; value: number }, color: string) => `<div class="bl-row">
       <div class="bl-label"><span class="swatch" style="background:${color}"></span>${esc(r.label)}</div>
       <div class="bl-track"><div class="bl-bar" style="width:${(r.value / max) * 100}%;background:${color}"></div></div>
-      <div class="bl-val">${num(r.value, r.value < 10 ? 1 : 0)} ${unit}</div>
+      <div class="bl-val">${r.value > 0 && r.value < 0.1 ? "< 0,1" : num(r.value, r.value < 10 ? 1 : 0)} ${unit}</div>
     </div>`;
   return `<div class="barlist pair">${row(a, SERIES.a)}${row(b, SERIES.b)}</div>`;
 }

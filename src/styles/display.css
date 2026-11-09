@@ -44,7 +44,7 @@ body.panel-open #veil { opacity: 1; }
   z-index: 3;
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
-.brand .eyebrow, .panel .eyebrow, .pair .eyebrow {
+.brand .eyebrow, .panel .eyebrow, .qr-pair .eyebrow {
   font-size: calc(var(--u) * 0.9);
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -381,7 +381,7 @@ body.focused .pulse { animation: none; }
 .panel-foot { font-size: calc(var(--u) * 0.72); color: var(--ink-3); margin-top: calc(var(--u) * 0.9); }
 
 /* ---------- QR pairing ---------- */
-.pair {
+.qr-pair {
   position: fixed;
   left: calc(var(--u) * 3.6);
   bottom: calc(var(--u) * 3.2);
@@ -400,7 +400,7 @@ body.focused .pulse { animation: none; }
   pointer-events: none;
   transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-body.qr-ready:not(.paired) .pair { opacity: 1; transform: none; }
+body.qr-ready:not(.paired) .qr-pair { opacity: 1; transform: none; }
 .qr {
   width: calc(var(--u) * 10);
   height: calc(var(--u) * 10);
@@ -409,9 +409,9 @@ body.qr-ready:not(.paired) .pair { opacity: 1; transform: none; }
   border-radius: calc(var(--u) * 0.8);
 }
 .qr svg { width: 100%; height: 100%; display: block; }
-.pair-text { display: flex; flex-direction: column; gap: calc(var(--u) * 0.35); }
-.pair-text strong { font-size: calc(var(--u) * 1.6); font-weight: 700; }
-.pair-text span { font-size: calc(var(--u) * 0.95); color: var(--ink-3); }
+.qr-pair-text { display: flex; flex-direction: column; gap: calc(var(--u) * 0.35); }
+.qr-pair-text strong { font-size: calc(var(--u) * 1.6); font-weight: 700; }
+.qr-pair-text span { font-size: calc(var(--u) * 0.95); color: var(--ink-3); }
 /* the "choose a country" hint only makes sense once a controller is connected */
 body:not(.paired) .hint { opacity: 0; }
 

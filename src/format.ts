@@ -12,6 +12,7 @@ export function usdBn(v: number): { value: string; unit: string } {
 }
 
 export function sekBn(v: number): { value: string; unit: string } {
+  if (v > 0 && v < 0.1) return { value: '< 0,1', unit: 'miljarder kr' };
   return { value: v < 10 ? num(v, 1) : num(v), unit: 'miljarder kr' };
 }
 

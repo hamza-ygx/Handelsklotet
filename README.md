@@ -39,7 +39,7 @@ Keyboard and mouse on the display: `f` = fullscreen, `Esc` = close the panel. Dr
 
 All figures live in `src/data/countries.ts`, one object per country. To add a country, add an object (and its flag in `public/flags/`). It becomes clickable and gold-highlighted automatically if its ISO code exists on the map. Set `dataNote` to show an "uncertain figures" badge (used for Syria, Lebanon and Iraq).
 
-> ⚠️ **The figures are compiled from public sources (IMF, World Bank, SCB etc.), rounded, and mostly from 2024. Verify and update them before the event.** Prioritise: policy rates, growth, Sweden's trade per country (SCB), and the e-commerce estimates. Exchange rates are fetched live from the ECB (frankfurter.dev) where available, otherwise an approximate static rate is shown.
+> ✅ **Fact-checked November 2026** against IMF/World Bank/national statistics (2024 data), UNCTAD WIR 2025 (FDI), S&P (current ratings), central banks (policy rates; the date shown next to each rate) and SCB-based figures for Swedish goods trade 2024 (exports by destination, imports by country of origin). Still unconfirmed: e-commerce market sizes (rough estimates), Swedish trade with Taiwan, Vietnam and Kosovo, Saudi Arabia's current policy rate (end-2024 value shown) and some export-partner shares (UAE, Russia, Malaysia, Singapore, Australia). Exchange rates are fetched live from the ECB (frankfurter.dev) where available, otherwise an approximate static rate is shown.
 
 Photos: one per country, fetched from Wikimedia Commons via the article in `photo.wiki`, with photographer and licence shown in the panel. `npm run photos` downloads them to `public/photos/` plus `credits.json`, which is then used instead of fetching live.
 
